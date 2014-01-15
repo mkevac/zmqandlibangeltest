@@ -61,7 +61,7 @@ static void *thread_one_fn(void *arg)
 	}
 
 	int zmq_fd;
-	size_t zmq_fd_len;
+	size_t zmq_fd_len = sizeof(zmq_fd);
 
 	if (-1 == zmq_getsockopt(zmq_s, ZMQ_FD, &zmq_fd, &zmq_fd_len)) {
 		perror("zmq_getsockopt");
