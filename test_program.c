@@ -25,9 +25,6 @@ static void read_callback(int fd, short event, void *arg)
 
 	entered_callback++;
 
-	/* reschedule */
-	event_add(ctx->read_event, 0);
-
 	char buf[5];
 
 	for (;;) {
@@ -83,7 +80,7 @@ static void *thread_one_fn(void *arg)
 	ctx.zmq_s = zmq_s;
 
 	event_init();
-	event_set(&read_event, zmq_fd, EV_READ, read_callback, &ctx);
+	event_set(&read_event, zmq_fd, EV_READ | EV_PERSIST, read_callback, &ctx);
 	event_add(&read_event, 0);
 
 	event_dispatch();
