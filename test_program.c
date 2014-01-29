@@ -4,6 +4,7 @@
 #include "pthread.h"
 #include "unistd.h"
 #include "inttypes.h"
+#include "string.h"
 
 #include "zmq.h"
 
@@ -30,7 +31,11 @@ static void read_callback(int fd, short event, void *arg)
 	char buf[5];
 
 	for (;;) {
-		int rv = zmq_recv(ctx->zmq_s, buf, 5, ZMQ_DONTWAIT);
+		zmq_msg_t msg;
+
+		zmq_msg_init(&msg);
+
+		int rv = zmq_msg_recv(&msg, ctx->zmq_s, ZMQ_DONTWAIT);
 
 		if (-1 == rv) {
 			if (errno == EAGAIN) {
@@ -42,6 +47,8 @@ static void read_callback(int fd, short event, void *arg)
 		}
 
 		received_messages++;
+
+		zmq_msg_close(&msg);
 	}
 }
 
@@ -100,10 +107,17 @@ static void *thread_two_fn(void *arg)
 	}
 
 	for (;;) {
-		if (-1 == zmq_send(zmq_s, "marko", 5, 0)) {
+		zmq_msg_t msg;
+
+		zmq_msg_init_size(&msg, 5);
+		memcpy(zmq_msg_data(&msg), "marko", 5);
+
+		if (-1 == zmq_msg_send(&msg, zmq_s, 0)) {
 			perror("zmq_bind");
 			exit(1);
 		}
+
+		zmq_msg_close(&msg);
 	}
 }
 
